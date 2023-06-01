@@ -11,13 +11,18 @@
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    vscode-server = {
+      url = "github:msteen/nixos-vscode-server";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     lorenz = {
       url = "github:lorenzleutgeb/nur";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, sops, lorenz, ... }:
+  outputs =
+    inputs@{ self, nixpkgs, home-manager, vscode-server, sops, lorenz, ... }:
     with builtins;
     with nixpkgs;
 
@@ -47,14 +52,16 @@
             nixpkgs.nixosModules.notDetected
             home-manager.nixosModules.home-manager
             sops.nixosModules.sops
-            {
+            ({ config, ... }: {
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = false;
                 backupFileExtension = "bak";
                 extraSpecialArgs.inputs = inputs;
+                users = { specialArgs.super = config; };
+                modules = [ vscode-server.homeModules.default ];
               };
-            }
+            })
             {
               system.stateVersion = "23.05";
               system.configurationRevision =

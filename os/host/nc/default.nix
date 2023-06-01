@@ -161,6 +161,7 @@ in {
 
   home-manager.users.${me.username}.imports = [
     "${inputs.lorenz}/hm/profiles/terminal.nix"
+    "${inputs.lorenz}/hm/programs/vscode.nix"
   ];
 
   users.users.${me.username} = {
