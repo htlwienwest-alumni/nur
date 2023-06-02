@@ -57,9 +57,10 @@
                 useGlobalPkgs = true;
                 useUserPackages = false;
                 backupFileExtension = "bak";
-                extraSpecialArgs.inputs = inputs;
-                users = { specialArgs.super = config; };
-                modules = [ vscode-server.homeModules.default ];
+                extraSpecialArgs = {
+                  inputs = inputs;
+                  super = config;
+                };
               };
             })
             {

@@ -88,11 +88,7 @@ in {
   ];
 
   systemd = {
-    services = {
-      systemd-resolved.enable = true;
-      uwsgi.restartTriggers =
-        [ config.environment.etc."mailman3/settings.py".source ];
-    };
+    services = { systemd-resolved.enable = true; };
     network = {
       enable = true;
       networks."eth0" = {
@@ -108,6 +104,14 @@ in {
   };
 
   services = {
+    opendkim = {
+      enable = true;
+      domains = "csl:${domain}";
+      selector = "lists0";
+    };
+
+    uwsgi.enable = true;
+
     qemuGuest.enable = true;
 
     resolved = {
@@ -125,17 +129,26 @@ in {
       config = {
         transport_maps = [ "hash:/var/lib/mailman/data/postfix_lmtp" ];
         local_recipient_maps = [ "hash:/var/lib/mailman/data/postfix_lmtp" ];
+        default_language = "de";
+
+        milter_protcol = "6";
+        smtpd_milters = "unix:/run/opendkim/opendkim.sock";
+        non_smtpd_milters = "unix:/run/opendkim/opendkim.sock";
       };
     };
 
     mailman = {
       enable = true;
+      hyperkitty.enable = true;
+      serve.enable = true;
       siteOwner = me.email;
       webUser = config.services.uwsgi.user;
       webHosts = [ domain ];
-      hyperkitty = {
-        enable = true;
-        baseUrl = "http://localhost:33141/hyperkitty/";
+      webSettings = {
+        SITE_ID = 2;
+        TIME_ZONE = "Europe/Vienna";
+        DEFAULT_FROM_EMAIL = localMail "mailman";
+        SERVER_EMAIL = localMail "mailman";
       };
     };
 
@@ -161,7 +174,7 @@ in {
 
   home-manager.users.${me.username}.imports = [
     "${inputs.lorenz}/hm/profiles/terminal.nix"
-    "${inputs.lorenz}/hm/programs/vscode.nix"
+    "${inputs.vscode-server}/modules/vscode-server/home.nix"
   ];
 
   users.users.${me.username} = {
